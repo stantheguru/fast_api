@@ -12,7 +12,6 @@ conn = psycopg2.connect(
 # create a cursor object
 
 
-
 app = FastAPI()
 
 
