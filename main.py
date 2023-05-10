@@ -1,5 +1,8 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Form, File,UploadFile, BackgroundTasks
+from fastapi.responses import FileResponse
+
 import psycopg2
+import os
 
 # establish a connection
 conn = psycopg2.connect(
@@ -8,6 +11,7 @@ conn = psycopg2.connect(
     user="",
     password=""
 )
+
 
 # create a cursor object
 
@@ -42,10 +46,49 @@ async def hello():
         conn.close()
     return {"message":results}
 
-@app.post("/post")
+@app.post("/post1")
 async def test(request: Request):
     data = await request.json()
 
     # Access the value based on the key
     value = data.get("name")
     return value
+
+
+
+@app.post("/upload")
+async def upload(file: UploadFile = File(...), description: str = Form(...)):
+    print(description)
+    try:
+        file_extension = os.path.splitext(file.filename)[1]  # Get the file extension
+        # Define the desired filename
+        desired_filename = "pic" + file_extension
+        root_dir = os.getcwd()+"/media/"
+        file_path = os.path.join(root_dir, desired_filename)
+        contents = await file.read()
+        with open(file_path, 'wb') as f:
+            f.write(contents)
+    except Exception as e:
+        return {"message": f"There was an error uploading the file {e}"}
+    finally:
+        file.file.close()
+
+    return {"message": f"Successfully uploaded {file.filename}"}
+
+
+@app.get("/image")
+def get_image():
+    root_dir = os.getcwd()
+    image_path = root_dir+"\media\shopping-cart-309592_1280.png"  # Specify the path to the image file
+    return FileResponse(image_path, media_type="image/jpeg")
+
+
+def process_data(data: str):
+    # Simulate some long-running process
+    print(f"Processing data: {data}")
+    # ... Additional processing logic ...
+
+@app.post("/data")
+async def create_data(data: str, background_tasks: BackgroundTasks):
+    background_tasks.add_task(process_data, data)
+    return {"message": "Data processing has been scheduled"}
