@@ -7,14 +7,12 @@ import os
 # establish a connection
 conn = psycopg2.connect(
     host="localhost",
-    database="",
-    user="",
+    database="school",
+    user="postgres",
     password=""
 )
 
-
 # create a cursor object
-
 
 app = FastAPI()
 
@@ -55,7 +53,6 @@ async def test(request: Request):
     return value
 
 
-
 @app.post("/upload")
 async def upload(file: UploadFile = File(...), description: str = Form(...)):
     print(description)
@@ -83,12 +80,12 @@ def get_image():
     return FileResponse(image_path, media_type="image/jpeg")
 
 
-def process_data(data: str):
+def process_data(desc: str = Form(...)):
     # Simulate some long-running process
-    print(f"Processing data: {data}")
+    print(f"Processing data: {desc}")
     # ... Additional processing logic ...
 
 @app.post("/data")
-async def create_data(data: str, background_tasks: BackgroundTasks):
-    background_tasks.add_task(process_data, data)
+async def create_data(background_tasks: BackgroundTasks, desc: str = Form(...)):
+    background_tasks.add_task(process_data, desc)
     return {"message": "Data processing has been scheduled"}
