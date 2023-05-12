@@ -7,8 +7,8 @@ import os
 # establish a connection
 conn = psycopg2.connect(
     host="localhost",
-    database="school",
-    user="postgres",
+    database="",
+    user="",
     password=""
 )
 
